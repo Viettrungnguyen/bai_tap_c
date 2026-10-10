@@ -1,11 +1,10 @@
 import Link from "next/link";
-import { ArrowLeft, ChevronDown, FileCode2, Gauge, Lightbulb, MemoryStick, UploadCloud } from "lucide-react";
+import { ArrowLeft, ChevronDown, FileCode2, Gauge, Lightbulb, MemoryStick } from "lucide-react";
 import { notFound } from "next/navigation";
 
-import { submitSourceFile } from "@/app/submissions/actions";
 import { AppShell } from "@/components/app-shell";
+import { AssignmentUploadForm } from "@/components/assignment-upload-form";
 import { FeedbackBanner } from "@/components/feedback-banner";
-import { SubmitButton } from "@/components/submit-button";
 import { requireUser } from "@/lib/auth";
 import type { Problem, ProblemExample, ProblemHint } from "@/lib/types";
 
@@ -49,14 +48,11 @@ export default async function ProblemPage({ params, searchParams }: ProblemPageP
   const hints = (hintsResult.data ?? []) as ProblemHint[];
   let assignmentQuery = supabase
     .from("assignments")
-    .select("id")
+    .select("id, problem_id, allowed_extensions, max_files, max_file_size")
     .eq("problem_id", problem.id)
     .eq("status", "published");
   if (feedback.assignment) assignmentQuery = assignmentQuery.eq("id", feedback.assignment);
   const { data: assignment } = await assignmentQuery.limit(1).maybeSingle();
-  const submitAction = assignment
-    ? submitSourceFile.bind(null, assignment.id, problem.id, problem.slug)
-    : null;
 
   return (
     <AppShell email={user.email} isAdmin={profile?.role === "admin"}>
@@ -151,26 +147,22 @@ export default async function ProblemPage({ params, searchParams }: ProblemPageP
               <p className="mt-2 text-sm leading-6 text-emerald-50/80">
                 Chọn file nguồn đã viết. Hệ thống lưu code để admin review, không chạy chương trình.
               </p>
-              {submitAction ? <form action={submitAction} className="mt-5">
-                <label className="block cursor-pointer rounded-xl border border-dashed border-white/35 bg-white/10 p-4 text-center transition hover:bg-white/15">
-                  <UploadCloud className="mx-auto" size={22} />
-                  <span className="mt-2 block text-sm font-semibold">Chọn file .c hoặc .cpp</span>
-                  <span className="mt-1 block text-xs text-emerald-100/70">Tối đa 256 KB</span>
-                  <input
-                    type="file"
-                    name="sourceFile"
-                    accept=".c,.cc,.cpp,.cxx,text/x-c,text/x-c++"
-                    required
-                    className="mt-3 block w-full text-xs text-emerald-50 file:mr-2 file:rounded-lg file:border-0 file:bg-white file:px-3 file:py-2 file:text-xs file:font-semibold file:text-emerald-800"
+              {assignment ? (
+                <div className="text-slate-900">
+                  <AssignmentUploadForm
+                    assignmentId={assignment.id}
+                    problemId={assignment.problem_id}
+                    userId={user.id}
+                    allowedExtensions={assignment.allowed_extensions}
+                    maxFiles={assignment.max_files}
+                    maxFileSize={assignment.max_file_size}
                   />
-                </label>
-                <SubmitButton
-                  pendingLabel="Đang tải lên..."
-                  className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-white font-semibold text-emerald-800 transition hover:bg-emerald-50"
-                >
-                  <UploadCloud size={17} /> Nộp bài
-                </SubmitButton>
-              </form> : <p className="mt-5 rounded-xl bg-white/10 p-4 text-sm text-emerald-50">Đề này chưa thuộc bài giao đang mở. Hãy nộp từ trang bài giao của lớp.</p>}
+                </div>
+              ) : (
+                <p className="mt-5 rounded-xl bg-white/10 p-4 text-sm text-emerald-50">
+                  Đề này chưa thuộc bài giao đang mở. Hãy nộp từ trang bài giao của lớp.
+                </p>
+              )}
             </section>
           </aside>
         </div>

@@ -7,21 +7,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import type { LessonStatus } from "@/lib/types";
 
-const MAX_RESOURCE_SIZE = 10 * 1024 * 1024;
 const RESOURCE_BUCKET = "lesson-resources";
-const allowedResourceExtensions = new Set([
-  ".pdf",
-  ".doc",
-  ".docx",
-  ".ppt",
-  ".pptx",
-  ".txt",
-  ".md",
-  ".zip",
-  ".png",
-  ".jpg",
-  ".jpeg",
-]);
 
 const weekSchema = z.object({
   courseId: z.uuid("Khóa học không hợp lệ."),
@@ -59,15 +45,6 @@ function databaseMessage(message: string) {
   if (message.includes("course_weeks_week_number_key")) return "Tuần này đã tồn tại.";
   if (message.includes("lessons_slug_key")) return "Slug bài giảng đã được sử dụng.";
   return "Không thể lưu dữ liệu. Vui lòng thử lại.";
-}
-
-function safeFileName(fileName: string) {
-  return fileName
-    .split(/[\\/]/)
-    .pop()!
-    .replace(/[^a-zA-Z0-9._-]+/g, "-")
-    .replace(/-+/g, "-")
-    .slice(0, 180);
 }
 
 export async function createWeek(formData: FormData) {
@@ -236,63 +213,6 @@ export async function setLessonStatus(weekId: string, lessonId: string, status: 
   revalidatePath(returnPath);
   revalidatePath("/lessons");
   redirect(withMessage(returnPath, "message", "Đã cập nhật trạng thái bài giảng."));
-}
-
-export async function uploadLessonResource(weekId: string, lessonId: string, formData: FormData) {
-  const { supabase, user } = await requireAdmin();
-  const week = z.uuid().parse(weekId);
-  const lesson = z.uuid().parse(lessonId);
-  const returnPath = `/admin/course/${week}/lessons/${lesson}`;
-  const file = formData.get("resourceFile");
-  const title = value(formData, "title").trim();
-  const sortOrder = z.coerce.number().int().min(0).max(10000).safeParse(value(formData, "sortOrder") || "0");
-
-  if (!(file instanceof File) || !file.size) {
-    redirect(withMessage(returnPath, "error", "Vui lòng chọn một file tài liệu."));
-  }
-  if (file.size > MAX_RESOURCE_SIZE) {
-    redirect(withMessage(returnPath, "error", "Tài liệu không được vượt quá 10 MB."));
-  }
-
-  const fileName = safeFileName(file.name);
-  const extension = fileName.slice(fileName.lastIndexOf(".")).toLowerCase();
-  if (!fileName || !allowedResourceExtensions.has(extension)) {
-    redirect(withMessage(returnPath, "error", "Chỉ nhận PDF, Office, Markdown, text, ZIP và ảnh JPG/PNG."));
-  }
-  if (!sortOrder.success) redirect(withMessage(returnPath, "error", "Thứ tự tài liệu không hợp lệ."));
-
-  const resourceTitle = title || fileName.replace(/\.[^.]+$/, "");
-  if (resourceTitle.length > 160) redirect(withMessage(returnPath, "error", "Tên tài liệu quá dài."));
-
-  const storagePath = `${lesson}/${crypto.randomUUID()}-${fileName}`;
-  const { error: uploadError } = await supabase.storage
-    .from(RESOURCE_BUCKET)
-    .upload(storagePath, file, {
-      contentType: file.type || "application/octet-stream",
-      upsert: false,
-    });
-
-  if (uploadError) redirect(withMessage(returnPath, "error", "Không thể tải file lên Storage."));
-
-  const { error: insertError } = await supabase.from("lesson_resources").insert({
-    lesson_id: lesson,
-    title: resourceTitle,
-    file_name: fileName,
-    storage_path: storagePath,
-    mime_type: file.type || "application/octet-stream",
-    file_size: file.size,
-    sort_order: sortOrder.data,
-    uploaded_by: user.id,
-  });
-
-  if (insertError) {
-    await supabase.storage.from(RESOURCE_BUCKET).remove([storagePath]);
-    redirect(withMessage(returnPath, "error", "Không thể lưu thông tin tài liệu."));
-  }
-
-  revalidatePath(returnPath);
-  revalidatePath("/lessons");
-  redirect(withMessage(returnPath, "message", "Đã tải tài liệu lên bài giảng."));
 }
 
 export async function deleteLessonResource(weekId: string, lessonId: string, resourceId: string) {
