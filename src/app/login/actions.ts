@@ -10,6 +10,11 @@ const credentialsSchema = z.object({
   password: z.string().min(8, "Mật khẩu phải có ít nhất 8 ký tự."),
 });
 
+const signInSchema = z.object({
+  identifier: z.string().trim().min(1, "Vui lòng nhập tên đăng nhập hoặc email."),
+  password: z.string().min(8, "Mật khẩu phải có ít nhất 8 ký tự."),
+});
+
 const signUpSchema = credentialsSchema.extend({
   fullName: z.string().trim().min(2, "Vui lòng nhập họ tên."),
 });
@@ -26,8 +31,8 @@ function redirectWithError(message: string, mode = "login"): never {
 }
 
 export async function signIn(formData: FormData) {
-  const parsed = credentialsSchema.safeParse({
-    email: formValue(formData, "email"),
+  const parsed = signInSchema.safeParse({
+    identifier: formValue(formData, "identifier"),
     password: formValue(formData, "password"),
   });
 
@@ -36,10 +41,32 @@ export async function signIn(formData: FormData) {
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
+  const identifier = parsed.data.identifier.toLowerCase();
+  const email = identifier.includes("@")
+    ? z.email().safeParse(identifier).data
+    : /^[a-z0-9]+$/.test(identifier)
+      ? `${identifier}@students.example.com`
+      : undefined;
+
+  if (!email) redirectWithError("Tên đăng nhập hoặc email không hợp lệ.");
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password: parsed.data.password,
+  });
 
   if (error) {
-    redirectWithError("Email hoặc mật khẩu không đúng.");
+    redirectWithError("Tên đăng nhập, email hoặc mật khẩu không đúng.");
+  }
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("must_change_password")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (profile?.must_change_password) redirect("/change-password");
   }
 
   redirect("/dashboard");

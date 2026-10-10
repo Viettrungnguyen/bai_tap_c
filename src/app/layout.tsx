@@ -15,11 +15,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "C Lab — Nộp và chấm bài C/C++",
-    template: "%s · C Lab",
+    default: "LearnHub — Học liệu và bài tập",
+    template: "%s · LearnHub",
   },
   description:
-    "Nền tảng thực hành, nộp và chấm bài lập trình C/C++ dành cho lớp học.",
+    "Nền tảng quản lý khóa học, bài giảng, bài giao và tiến độ học viên.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

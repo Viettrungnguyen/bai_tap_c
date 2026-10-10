@@ -4,13 +4,14 @@ import { ArrowRight, CheckCircle2, Clock3, FileCode2, XCircle } from "lucide-rea
 import { AppShell } from "@/components/app-shell";
 import { requireAdmin } from "@/lib/auth";
 import { formatDateTime } from "@/lib/format";
-import type { Problem, Submission, SubmissionStatus } from "@/lib/types";
+import type { Assignment, Problem, Submission, SubmissionStatus } from "@/lib/types";
 
 export const metadata = { title: "Review bài nộp" };
 export const instant = false;
 
 type AdminSubmission = Submission & {
   problems: Pick<Problem, "title"> | null;
+  assignments: Pick<Assignment, "title"> | null;
   submitter: { full_name: string | null; email: string } | null;
 };
 
@@ -27,7 +28,7 @@ export default async function AdminSubmissionsPage() {
   const { supabase, user } = await requireAdmin();
   const { data } = await supabase
     .from("submissions")
-    .select("*, problems(title), submitter:profiles!submissions_user_id_fkey(full_name, email)")
+    .select("*, assignments(title), problems(title), submitter:profiles!submissions_user_id_fkey(full_name, email)")
     .order("submitted_at", { ascending: false });
   const submissions = (data ?? []) as AdminSubmission[];
   const pendingCount = submissions.filter((item) => item.status === "pending").length;
@@ -58,9 +59,9 @@ export default async function AdminSubmissionsPage() {
                         <FileCode2 size={20} />
                       </span>
                       <div className="min-w-0">
-                        <h2 className="truncate font-semibold">{submission.problems?.title ?? "Bài tập đã xóa"}</h2>
+                        <h2 className="truncate font-semibold">{submission.assignments?.title ?? submission.problems?.title ?? "Bài giao đã xóa"}</h2>
                         <p className="mt-1 truncate text-sm text-slate-500">
-                          {submission.submitter?.full_name || submission.submitter?.email || "User"} · {submission.file_name}
+                          {submission.submitter?.full_name || submission.submitter?.email || "User"} · {submission.file_name || "File đính kèm"}
                         </p>
                         <p className="mt-1 text-xs text-slate-400">{formatDateTime(submission.submitted_at)}</p>
                       </div>

@@ -4,7 +4,7 @@ export type ProblemProgressStatus = "not_started" | SubmissionStatus;
 
 export type ProgressSubmission = Pick<
   Submission,
-  "id" | "user_id" | "problem_id" | "status" | "score" | "submitted_at"
+  "id" | "user_id" | "assignment_id" | "problem_id" | "status" | "score" | "submitted_at"
 >;
 
 export type ProblemProgress = {

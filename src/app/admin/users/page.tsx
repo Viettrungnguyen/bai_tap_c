@@ -4,43 +4,52 @@ import { ArrowRight, CheckCircle2, ClipboardList, UserRound, Users } from "lucid
 import { AppShell } from "@/components/app-shell";
 import { requireAdmin } from "@/lib/auth";
 import { getProblemProgress, type ProgressSubmission } from "@/lib/progress";
-import type { Profile } from "@/lib/types";
+import type { Assignment, CourseClass, CourseMember, Profile } from "@/lib/types";
 
 export const metadata = { title: "Tổng kết học viên" };
 export const instant = false;
 
-export default async function AdminUsersPage() {
+export default async function AdminUsersPage({ searchParams }: { searchParams: Promise<{ class?: string }> }) {
   const { supabase, user } = await requireAdmin();
-  const [profilesResult, problemsResult, submissionsResult] = await Promise.all([
+  const filter = await searchParams;
+  const [profilesResult, assignmentsResult, submissionsResult, classesResult, membersResult] = await Promise.all([
     supabase
       .from("profiles")
-      .select("id, email, full_name, student_code, role, created_at, updated_at")
+      .select("id, email, full_name, username, student_code, school, major, must_change_password, role, created_at, updated_at")
       .eq("role", "user")
       .order("full_name", { ascending: true, nullsFirst: false }),
-    supabase
-      .from("problems")
-      .select("id")
-      .eq("status", "published"),
+    supabase.from("assignments").select("*").eq("status", "published"),
     supabase
       .from("submissions")
-      .select("id, user_id, problem_id, status, score, submitted_at")
+      .select("id, user_id, assignment_id, problem_id, status, score, submitted_at")
       .order("submitted_at", { ascending: false }),
+    supabase.from("course_classes").select("*").order("name"),
+    supabase.from("course_members").select("*").eq("role", "student"),
   ]);
 
-  const learners = (profilesResult.data ?? []) as Profile[];
-  const problemIds = new Set((problemsResult.data ?? []).map((problem) => problem.id as string));
-  const submissions = ((submissionsResult.data ?? []) as ProgressSubmission[]).filter((submission) =>
-    problemIds.has(submission.problem_id),
-  );
-  const totalProblems = problemIds.size;
+  const allLearners = (profilesResult.data ?? []) as Profile[];
+  const allAssignments = (assignmentsResult.data ?? []) as Assignment[];
+  const classes = (classesResult.data ?? []) as CourseClass[];
+  const members = (membersResult.data ?? []) as CourseMember[];
+  const selectedClass = classes.find((item) => item.id === filter.class);
+  const memberIds = selectedClass ? new Set(members.filter((item) => item.class_id === selectedClass.id).map((item) => item.user_id)) : null;
+  const learners = memberIds ? allLearners.filter((learner) => memberIds.has(learner.id)) : allLearners;
+  const assignments = selectedClass ? allAssignments.filter((item) => item.class_id === selectedClass.id || (item.class_id === null && item.course_id === selectedClass.course_id)) : allAssignments;
+  const submissions = (submissionsResult.data ?? []) as ProgressSubmission[];
   const summaries = learners.map((learner) => {
-    const learnerSubmissions = submissions.filter((submission) => submission.user_id === learner.id);
+    const learnerClassIds = new Set(members.filter((member) => member.user_id === learner.id).map((member) => member.class_id));
+    const learnerCourseIds = new Set(classes.filter((item) => learnerClassIds.has(item.id)).map((item) => item.course_id));
+    const learnerAssignments = selectedClass
+      ? assignments
+      : assignments.filter((item) => item.class_id ? learnerClassIds.has(item.class_id) : learnerCourseIds.has(item.course_id));
+    const learnerAssignmentIds = new Set(learnerAssignments.map((assignment) => assignment.id));
+    const learnerSubmissions = submissions.filter((submission) => submission.user_id === learner.id && learnerAssignmentIds.has(submission.assignment_id));
     const byProblem = new Map<string, ProgressSubmission[]>();
 
     for (const submission of learnerSubmissions) {
-      const current = byProblem.get(submission.problem_id) ?? [];
+      const current = byProblem.get(submission.assignment_id) ?? [];
       current.push(submission);
-      byProblem.set(submission.problem_id, current);
+      byProblem.set(submission.assignment_id, current);
     }
 
     const progress = [...byProblem.values()].map(getProblemProgress);
@@ -49,9 +58,10 @@ export default async function AdminUsersPage() {
 
     return {
       learner,
+      total: learnerAssignments.length,
       attempted,
       correct,
-      percent: totalProblems ? Math.round((correct / totalProblems) * 100) : 0,
+      percent: learnerAssignments.length ? Math.round((correct / learnerAssignments.length) * 100) : 0,
     };
   });
 
@@ -66,6 +76,7 @@ export default async function AdminUsersPage() {
         <p className="mt-3 max-w-2xl leading-7 text-slate-600">
           Theo dõi số bài đã nộp, số bài làm đúng và mở chi tiết tiến độ của từng học viên.
         </p>
+        <div className="mt-5 flex flex-wrap gap-2"><Link href="/admin/users" className={`rounded-full px-3 py-2 text-sm font-semibold ${!selectedClass ? "bg-slate-950 text-white" : "border border-slate-200 bg-white"}`}>Tất cả lớp</Link>{classes.map((item) => <Link key={item.id} href={`/admin/users?class=${item.id}`} className={`rounded-full px-3 py-2 text-sm font-semibold ${selectedClass?.id === item.id ? "bg-slate-950 text-white" : "border border-slate-200 bg-white"}`}>{item.name}</Link>)}</div>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
           {[
@@ -98,7 +109,7 @@ export default async function AdminUsersPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {summaries.map(({ learner, attempted, correct, percent }) => (
+                  {summaries.map(({ learner, total, attempted, correct, percent }) => (
                     <tr key={learner.id} className="transition hover:bg-slate-50">
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
@@ -108,12 +119,14 @@ export default async function AdminUsersPage() {
                           <div className="min-w-0">
                             <div className="truncate font-semibold">{learner.full_name || learner.email}</div>
                             <div className="mt-0.5 truncate text-xs text-slate-500">
-                              {learner.student_code ? `${learner.student_code} · ` : ""}{learner.email}
+                              {learner.username ? `@${learner.username}` : learner.email}
+                              {learner.school ? ` · ${learner.school}` : ""}
+                              {learner.major ? ` · ${learner.major}` : ""}
                             </div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-4 text-center font-semibold">{totalProblems}</td>
+                      <td className="px-4 py-4 text-center font-semibold">{total}</td>
                       <td className="px-4 py-4 text-center font-semibold text-amber-700">{attempted}</td>
                       <td className="px-4 py-4 text-center font-semibold text-emerald-700">{correct}</td>
                       <td className="px-4 py-4">

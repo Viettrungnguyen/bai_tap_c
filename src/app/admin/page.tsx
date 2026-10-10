@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BookPlus, ClipboardCheck, Clock3, Users } from "lucide-react";
+import { ArrowRight, BookOpenText, BookPlus, ClipboardCheck, Clock3, Layers3, Users } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { requireAdmin } from "@/lib/auth";
@@ -11,8 +11,29 @@ export default async function AdminPage() {
   const { user } = await requireAdmin();
   const actions = [
     {
-      title: "Quản lý bài tập",
-      description: "Tạo đề, test case, gợi ý và xuất bản bài.",
+      title: "Khóa học & lớp học",
+      description: "Tạo khóa, mở lớp và phân học viên theo lớp.",
+      href: "/admin/courses",
+      icon: Layers3,
+      enabled: true,
+    },
+    {
+      title: "Quản lý bài giảng",
+      description: "Tổ chức bài giảng theo tuần và tải tài liệu học tập.",
+      href: "/admin/course",
+      icon: BookOpenText,
+      enabled: true,
+    },
+    {
+      title: "Quản lý bài giao",
+      description: "Giao bài coding hoặc file cho khóa và lớp.",
+      href: "/admin/assignments",
+      icon: BookPlus,
+      enabled: true,
+    },
+    {
+      title: "Ngân hàng đề coding",
+      description: "Giữ và biên soạn đề, test case, gợi ý C/C++ cũ.",
       href: "/admin/problems",
       icon: BookPlus,
       enabled: true,
@@ -41,7 +62,7 @@ export default async function AdminPage() {
         <p className="mt-3 max-w-2xl leading-7 text-slate-600">
           Quản lý nội dung học tập, theo dõi bài nộp và tiến độ của học viên tại một nơi.
         </p>
-        <div className="mt-9 grid gap-5 lg:grid-cols-3">
+        <div className="mt-9 grid gap-5 lg:grid-cols-2 xl:grid-cols-3">
           {actions.map(({ title, description, href, icon: Icon, enabled }) => {
             const content = (
               <>

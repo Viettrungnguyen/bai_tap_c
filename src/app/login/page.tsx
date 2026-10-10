@@ -33,14 +33,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             <span className="grid h-11 w-11 place-items-center rounded-xl bg-slate-950 text-emerald-300">
               <Code2 size={22} />
             </span>
-            <span className="text-xl font-semibold">C Lab</span>
+            <span className="text-xl font-semibold">LearnHub</span>
           </div>
           <h1 className="text-4xl font-semibold tracking-[-0.04em]">
             {isSignUp ? "Tạo tài khoản" : "Chào mừng trở lại"}
           </h1>
           <p className="mt-3 leading-7 text-slate-600">
             {isSignUp
-              ? "Bắt đầu luyện tập C/C++ và theo dõi tiến độ của bạn."
+              ? "Bắt đầu học, nhận bài và theo dõi tiến độ của bạn."
               : "Đăng nhập để tiếp tục bài tập đang làm."}
           </p>
 
@@ -92,13 +92,15 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               </label>
             ) : null}
             <label className="block">
-              <span className="mb-2 block text-sm font-semibold text-slate-700">Email</span>
+              <span className="mb-2 block text-sm font-semibold text-slate-700">
+                {isSignUp ? "Email" : "Tên đăng nhập hoặc email"}
+              </span>
               <input
-                name="email"
-                type="email"
-                autoComplete="email"
+                name={isSignUp ? "email" : "identifier"}
+                type={isSignUp ? "email" : "text"}
+                autoComplete={isSignUp ? "email" : "username"}
                 required
-                placeholder="ban@example.com"
+                placeholder={isSignUp ? "ban@example.com" : "nguyenducmanh"}
                 className="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 outline-none transition placeholder:text-slate-400 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-100"
               />
             </label>
@@ -139,7 +141,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <blockquote className="text-4xl font-medium leading-tight tracking-[-0.04em]">
             “Code tốt bắt đầu từ một vòng lặp nhỏ: viết, chạy, hiểu lỗi và thử lại.”
           </blockquote>
-          <p className="mt-7 text-slate-400">Không gian thực hành C/C++ cho lớp học.</p>
+          <p className="mt-7 text-slate-400">Không gian học tập chung cho mọi môn học.</p>
         </div>
       </aside>
     </main>

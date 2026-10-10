@@ -14,7 +14,7 @@ export const instant = false;
 
 type ProblemPageProps = {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ error?: string; message?: string }>;
+  searchParams: Promise<{ assignment?: string; error?: string; message?: string }>;
 };
 
 export default async function ProblemPage({ params, searchParams }: ProblemPageProps) {
@@ -47,14 +47,23 @@ export default async function ProblemPage({ params, searchParams }: ProblemPageP
   ]);
   const examples = (examplesResult.data ?? []) as ProblemExample[];
   const hints = (hintsResult.data ?? []) as ProblemHint[];
-  const submitAction = submitSourceFile.bind(null, problem.id, problem.slug);
+  let assignmentQuery = supabase
+    .from("assignments")
+    .select("id")
+    .eq("problem_id", problem.id)
+    .eq("status", "published");
+  if (feedback.assignment) assignmentQuery = assignmentQuery.eq("id", feedback.assignment);
+  const { data: assignment } = await assignmentQuery.limit(1).maybeSingle();
+  const submitAction = assignment
+    ? submitSourceFile.bind(null, assignment.id, problem.id, problem.slug)
+    : null;
 
   return (
     <AppShell email={user.email} isAdmin={profile?.role === "admin"}>
       <article>
         <FeedbackBanner error={feedback.error} message={feedback.message} />
         <Link
-          href="/dashboard"
+          href={assignment ? `/assignments/${assignment.id}` : "/dashboard"}
           className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-slate-950"
         >
           <ArrowLeft size={17} /> Danh sách bài tập
@@ -142,7 +151,7 @@ export default async function ProblemPage({ params, searchParams }: ProblemPageP
               <p className="mt-2 text-sm leading-6 text-emerald-50/80">
                 Chọn file nguồn đã viết. Hệ thống lưu code để admin review, không chạy chương trình.
               </p>
-              <form action={submitAction} className="mt-5">
+              {submitAction ? <form action={submitAction} className="mt-5">
                 <label className="block cursor-pointer rounded-xl border border-dashed border-white/35 bg-white/10 p-4 text-center transition hover:bg-white/15">
                   <UploadCloud className="mx-auto" size={22} />
                   <span className="mt-2 block text-sm font-semibold">Chọn file .c hoặc .cpp</span>
@@ -161,7 +170,7 @@ export default async function ProblemPage({ params, searchParams }: ProblemPageP
                 >
                   <UploadCloud size={17} /> Nộp bài
                 </SubmitButton>
-              </form>
+              </form> : <p className="mt-5 rounded-xl bg-white/10 p-4 text-sm text-emerald-50">Đề này chưa thuộc bài giao đang mở. Hãy nộp từ trang bài giao của lớp.</p>}
             </section>
           </aside>
         </div>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, FileCode2, Save } from "lucide-react";
+import { ArrowLeft, Download, FileCode2, FileText, Save } from "lucide-react";
 import { notFound } from "next/navigation";
 
 import { reviewSubmission } from "@/app/submissions/actions";
@@ -9,13 +9,14 @@ import { FeedbackBanner } from "@/components/feedback-banner";
 import { SubmitButton } from "@/components/submit-button";
 import { requireAdmin } from "@/lib/auth";
 import { formatDateTime } from "@/lib/format";
-import type { Problem, Submission } from "@/lib/types";
+import type { Assignment, Problem, Submission, SubmissionFile } from "@/lib/types";
 
 export const metadata = { title: "Review bài nộp" };
 export const instant = false;
 
 type AdminSubmission = Submission & {
   problems: Pick<Problem, "title" | "slug"> | null;
+  assignments: Pick<Assignment, "title"> | null;
   submitter: { full_name: string | null; email: string; student_code: string | null } | null;
 };
 
@@ -36,13 +37,19 @@ export default async function AdminSubmissionPage({
   const { data } = await supabase
     .from("submissions")
     .select(
-      "*, problems(title, slug), submitter:profiles!submissions_user_id_fkey(full_name, email, student_code)",
+      "*, assignments(title), problems(title, slug), submitter:profiles!submissions_user_id_fkey(full_name, email, student_code)",
     )
     .eq("id", id)
     .maybeSingle();
 
   if (!data) notFound();
   const submission = data as AdminSubmission;
+  const { data: fileRows } = await supabase.from("submission_files").select("*").eq("submission_id", id).order("uploaded_at");
+  const files = (fileRows ?? []) as SubmissionFile[];
+  const filesWithUrls = await Promise.all(files.map(async (file) => {
+    const { data: signed } = await supabase.storage.from("assignment-submissions").createSignedUrl(file.storage_path, 600);
+    return { ...file, url: signed?.signedUrl ?? null };
+  }));
   const reviewAction = reviewSubmission.bind(null, id);
 
   return (
@@ -57,9 +64,9 @@ export default async function AdminSubmissionPage({
         </Link>
 
         <div className="mt-5">
-          <p className="text-sm font-semibold text-emerald-700">REVIEW SOURCE CODE</p>
+          <p className="text-sm font-semibold text-emerald-700">REVIEW BÀI NỘP</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-[-0.03em]">
-            {submission.problems?.title ?? "Bài tập"}
+            {submission.assignments?.title ?? submission.problems?.title ?? "Bài giao"}
           </h1>
           <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-slate-500">
             <span>{submission.submitter?.full_name || submission.submitter?.email || "User"}</span>
@@ -69,7 +76,9 @@ export default async function AdminSubmissionPage({
         </div>
 
         <div className="mt-7 grid gap-6 xl:grid-cols-[1fr_340px]">
-          <div className="overflow-hidden rounded-2xl border border-slate-900/10 bg-white">
+          <div className="space-y-5">
+            {filesWithUrls.length ? <div className="overflow-hidden rounded-2xl border border-slate-900/10 bg-white"><div className="border-b border-slate-100 px-5 py-4 font-semibold">File học viên đã nộp</div><div className="divide-y divide-slate-100">{filesWithUrls.map((file) => <div key={file.id} className="flex items-center justify-between gap-4 p-5"><div className="flex min-w-0 items-center gap-3"><FileText className="shrink-0 text-slate-500" /><div className="min-w-0"><div className="truncate font-semibold">{file.file_name}</div><div className="text-xs text-slate-500">{Math.ceil(file.file_size / 1024)} KB</div></div></div>{file.url ? <a href={file.url} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold"><Download size={15} /> Tải file</a> : null}</div>)}</div></div> : null}
+          {submission.source_code && submission.file_name ? <div className="overflow-hidden rounded-2xl border border-slate-900/10 bg-white">
             <div className="flex flex-col gap-4 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
                 <span className="grid h-10 w-10 place-items-center rounded-xl bg-slate-100 text-slate-600">
@@ -85,13 +94,13 @@ export default async function AdminSubmissionPage({
             <pre className="max-h-[760px] overflow-auto bg-slate-950 p-5 font-mono text-sm leading-6 text-slate-200 sm:p-7">
               <code>{submission.source_code}</code>
             </pre>
-          </div>
+          </div> : null}</div>
 
           <aside>
             <form action={reviewAction} className="sticky top-8 rounded-2xl border border-slate-900/10 bg-white p-6">
               <h2 className="text-xl font-semibold">Kết quả review</h2>
               <p className="mt-2 text-sm leading-6 text-slate-500">
-                Đánh giá thủ công file code đã nộp. Hệ thống không chạy chương trình.
+                Đánh giá thủ công các file đã nộp. Hệ thống không chạy chương trình.
               </p>
 
               <label className="mt-6 block text-sm font-semibold text-slate-700">

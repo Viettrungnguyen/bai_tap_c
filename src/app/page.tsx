@@ -15,15 +15,15 @@ import { SiteHeader } from "@/components/site-header";
 const features = [
   {
     icon: TerminalSquare,
-    title: "Chạy C/C++ ngay trên web",
+    title: "Bài giảng theo khóa học",
     description:
-      "Viết code, nhập dữ liệu thử và nhận phản hồi biên dịch trong cùng một màn hình.",
+      "Tổ chức bài giảng theo khóa, lớp và tuần học để học viên theo dõi dễ dàng.",
   },
   {
     icon: CheckCircle2,
-    title: "Chấm bài tự động",
+    title: "Nộp mọi loại bài tập",
     description:
-      "Bài nộp được kiểm tra bằng test ẩn với trạng thái rõ ràng và lịch sử đầy đủ.",
+      "Nhận bài coding, tài liệu, project và lưu file an toàn trong kho riêng tư.",
   },
   {
     icon: BarChart3,
@@ -34,8 +34,8 @@ const features = [
 ];
 
 const stats = [
-  ["C11 · C++17", "Ngôn ngữ đầu tiên"],
-  ["8", "Trạng thái chấm bài"],
+  ["C · SQL · Java", "Mở rộng nhiều môn"],
+  ["3", "Loại bài giao"],
   ["2", "Vai trò hệ thống"],
 ];
 
@@ -53,12 +53,12 @@ export default function Home() {
               Học lập trình bằng cách thực hành
             </div>
             <h1 className="max-w-3xl text-balance text-5xl font-semibold leading-[1.02] tracking-[-0.055em] text-slate-950 sm:text-6xl lg:text-7xl">
-              Nộp bài C/C++.
-              <span className="block text-emerald-700">Hiểu lỗi. Tiến bộ.</span>
+              Học liệu tập trung.
+              <span className="block text-emerald-700">Giao bài. Theo dõi.</span>
             </h1>
             <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-600 sm:text-xl">
-              Không gian thực hành lập trình dành cho lớp học: đề bài rõ ràng,
-              chạy thử nhanh, chấm tự động và theo dõi tiến độ tập trung.
+              Không gian học tập cho nhiều môn: bài giảng theo tuần, bài giao rõ ràng,
+              nộp file riêng tư và theo dõi tiến độ theo từng lớp.
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Link
@@ -171,8 +171,8 @@ export default function Home() {
           <ShieldCheck size={30} className="text-emerald-400" />
           <h2 className="mt-8 text-3xl font-semibold tracking-tight">Dành cho quản trị viên</h2>
           <p className="mt-4 max-w-lg text-lg leading-8 text-slate-300">
-            Quản lý đề, test ẩn, gợi ý và xem nhanh ai đã làm, bài nào còn sai và
-            source code của từng lần nộp.
+            Quản lý khóa, lớp, bài giảng, bài giao và xem nhanh ai đã làm,
+            bài nào còn thiếu hoặc cần review.
           </p>
         </div>
       </section>
@@ -180,9 +180,9 @@ export default function Home() {
       <footer className="border-t border-slate-900/10 px-5 py-8 lg:px-10">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
           <span className="inline-flex items-center gap-2 font-semibold text-slate-800">
-            <Code2 size={17} /> C Lab
+            <Code2 size={17} /> LearnHub
           </span>
-          <span>Nền tảng thực hành C/C++ cho lớp học.</span>
+          <span>Nền tảng học liệu và bài tập cho lớp học.</span>
         </div>
       </footer>
     </main>

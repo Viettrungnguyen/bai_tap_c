@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BarChart3, BookOpen, Code2, FileClock, LogOut, ShieldCheck } from "lucide-react";
+import { BookOpen, BookOpenText, Code2, FileClock, LogOut, ShieldCheck } from "lucide-react";
 
 import { signOut } from "@/app/login/actions";
 
@@ -10,9 +10,9 @@ type AppShellProps = {
 };
 
 const links = [
-  { href: "/dashboard", label: "Bài tập", icon: BookOpen, enabled: true },
-  { href: "/submissions", label: "Bài đã nộp", icon: FileClock, enabled: true },
-  { href: "/progress", label: "Tiến độ", icon: BarChart3, enabled: false },
+  { href: "/lessons", label: "Bài giảng", icon: BookOpenText },
+  { href: "/dashboard", label: "Bài giao", icon: BookOpen },
+  { href: "/submissions", label: "Bài đã nộp", icon: FileClock },
 ];
 
 export function AppShell({ children, email, isAdmin }: AppShellProps) {
@@ -24,7 +24,7 @@ export function AppShell({ children, email, isAdmin }: AppShellProps) {
             <span className="grid h-9 w-9 place-items-center rounded-xl bg-slate-950 text-emerald-300">
               <Code2 size={19} />
             </span>
-            C Lab
+            LearnHub
           </Link>
           <div className="flex items-center gap-3">
             <span className="hidden text-sm text-slate-500 sm:block">{email}</span>
@@ -43,25 +43,15 @@ export function AppShell({ children, email, isAdmin }: AppShellProps) {
       <div className="mx-auto grid max-w-7xl gap-8 px-5 py-8 md:grid-cols-[210px_1fr] lg:px-10">
         <aside>
           <nav className="flex gap-2 overflow-x-auto md:sticky md:top-8 md:flex-col">
-            {links.map(({ href, label, icon: Icon, enabled }) =>
-              enabled ? (
-                <Link
-                  key={href}
-                  href={href}
-                  className="flex shrink-0 items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-white hover:text-slate-950"
-                >
-                  <Icon size={18} /> {label}
-                </Link>
-              ) : (
-                <span
-                  key={href}
-                  title="Sẽ có trong phần triển khai tiếp theo"
-                  className="flex shrink-0 cursor-not-allowed items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-slate-400"
-                >
-                  <Icon size={18} /> {label}
-                </span>
-              ),
-            )}
+            {links.map(({ href, label, icon: Icon }) => (
+              <Link
+                key={href}
+                href={href}
+                className="flex shrink-0 items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-white hover:text-slate-950"
+              >
+                <Icon size={18} /> {label}
+              </Link>
+            ))}
             {isAdmin ? (
               <Link
                 href="/admin"

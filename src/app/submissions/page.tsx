@@ -4,7 +4,7 @@ import { ArrowRight, CheckCircle2, Clock3, FileCode2, XCircle } from "lucide-rea
 import { AppShell } from "@/components/app-shell";
 import { requireUser } from "@/lib/auth";
 import { formatDateTime } from "@/lib/format";
-import type { SubmissionStatus, SubmissionWithProblem } from "@/lib/types";
+import type { SubmissionStatus, SubmissionWithAssignment } from "@/lib/types";
 
 export const metadata = { title: "Bài đã nộp" };
 export const instant = false;
@@ -22,10 +22,10 @@ export default async function SubmissionsPage() {
   const { supabase, user, profile } = await requireUser();
   const { data } = await supabase
     .from("submissions")
-    .select("*, problems(title, slug)")
+    .select("*, assignments(id, title, slug, assignment_type), problems(title, slug)")
     .eq("user_id", user.id)
     .order("submitted_at", { ascending: false });
-  const submissions = (data ?? []) as SubmissionWithProblem[];
+  const submissions = (data ?? []) as SubmissionWithAssignment[];
 
   return (
     <AppShell email={user.email} isAdmin={profile?.role === "admin"}>
@@ -33,7 +33,7 @@ export default async function SubmissionsPage() {
         <p className="text-sm font-semibold text-emerald-700">LỊCH SỬ</p>
         <h1 className="mt-2 text-4xl font-semibold tracking-[-0.04em]">Bài đã nộp</h1>
         <p className="mt-3 text-slate-600">
-          Mỗi lần nộp được giữ nguyên file và source code để bạn có thể xem lại.
+          Mỗi lần nộp được lưu trong kho file riêng tư để bạn có thể xem lại.
         </p>
 
         <div className="mt-8 overflow-hidden rounded-2xl border border-slate-900/10 bg-white">
@@ -54,10 +54,10 @@ export default async function SubmissionsPage() {
                       </span>
                       <div className="min-w-0">
                         <h2 className="truncate font-semibold">
-                          {submission.problems?.title ?? "Bài tập đã xóa"}
+                          {submission.assignments?.title ?? submission.problems?.title ?? "Bài giao đã xóa"}
                         </h2>
                         <p className="mt-1 truncate text-sm text-slate-500">
-                          {submission.file_name} · {submission.language === "c11" ? "C11" : "C++17"} · {formatDateTime(submission.submitted_at)}
+                          {submission.file_name || "File đính kèm"}{submission.language ? ` · ${submission.language === "c11" ? "C11" : "C++17"}` : ""} · {formatDateTime(submission.submitted_at)}
                         </p>
                       </div>
                     </div>

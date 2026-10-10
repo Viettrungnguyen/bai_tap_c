@@ -9,7 +9,7 @@ export function SiteHeader() {
           <span className="grid h-9 w-9 place-items-center rounded-xl bg-slate-950 text-emerald-300">
             <Code2 size={19} />
           </span>
-          <span className="text-lg">C Lab</span>
+          <span className="text-lg">LearnHub</span>
         </Link>
         <nav className="flex items-center gap-3">
           <Link
