@@ -22,14 +22,14 @@ export default async function AdminPage() {
       description: "Xem source code, kết quả và ghi chú review.",
       href: "/admin/submissions",
       icon: ClipboardCheck,
-      enabled: false,
+      enabled: true,
     },
     {
       title: "Người dùng & tiến độ",
       description: "Xem bảng tổng kết và chi tiết từng học viên.",
       href: "/admin/users",
       icon: Users,
-      enabled: false,
+      enabled: true,
     },
   ];
 

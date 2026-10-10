@@ -11,7 +11,7 @@ type AppShellProps = {
 
 const links = [
   { href: "/dashboard", label: "Bài tập", icon: BookOpen, enabled: true },
-  { href: "/submissions", label: "Bài đã nộp", icon: FileClock, enabled: false },
+  { href: "/submissions", label: "Bài đã nộp", icon: FileClock, enabled: true },
   { href: "/progress", label: "Tiến độ", icon: BarChart3, enabled: false },
 ];
 

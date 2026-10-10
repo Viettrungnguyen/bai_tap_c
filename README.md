@@ -24,7 +24,21 @@ Website nộp và chấm bài tập C/C++ cho lớp học.
 - Dashboard user hiển thị bài đã xuất bản.
 - Trang chi tiết đề, ví dụ và gợi ý.
 
-Phần tiếp theo: Monaco Editor, chạy thử C/C++ và tích hợp Judge0.
+### Phần 3 — Nộp file code và review thủ công
+
+- User nộp file `.c`, `.cc`, `.cpp` hoặc `.cxx`.
+- Kiểm tra định dạng, UTF-8 và giới hạn 256 KB ở server.
+- Lưu tên file và source code trong Supabase.
+- User xem lịch sử, source code và kết quả review.
+- Admin xem, tải file, chấm đúng/sai, nhập điểm và nhận xét.
+- Không biên dịch hoặc chạy code trên production.
+
+### Phần 4 — Tổng kết tiến độ học viên
+
+- Admin xem bảng tổng kết toàn bộ học viên.
+- Hiển thị tổng số bài, số bài đã làm, số bài đúng và tỷ lệ hoàn thành.
+- Trang chi tiết học viên hiển thị trạng thái từng bài: chưa làm, chờ chấm, chưa đúng hoặc đúng.
+- Xem số lần nộp, lần nộp gần nhất và mở trực tiếp bài nộp để review.
 
 ## Chạy local
 
@@ -34,6 +48,7 @@ Phần tiếp theo: Monaco Editor, chạy thử C/C++ và tích hợp Judge0.
 ```text
 supabase/migrations/001_auth_and_profiles.sql
 supabase/migrations/002_problems.sql
+supabase/migrations/003_submissions.sql
 ```
 
 3. Sao chép `.env.example` thành `.env.local` và điền thông tin Supabase.
@@ -56,8 +71,7 @@ set role = 'admin'
 where email = 'admin@example.com';
 ```
 
-Không đưa `SUPABASE_SECRET_KEY` hoặc `JUDGE0_API_KEY` vào biến có tiền tố
-`NEXT_PUBLIC_`.
+Không đưa Supabase secret key vào source code hoặc biến có tiền tố `NEXT_PUBLIC_`.
 
 ## Kiểm tra trước khi deploy
 

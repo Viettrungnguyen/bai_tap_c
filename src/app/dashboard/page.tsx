@@ -22,19 +22,43 @@ const difficultyStyle: Record<ProblemDifficulty, string> = {
 
 export default async function DashboardPage() {
   const { supabase, user, profile } = await requireUser();
-  const { data } = await supabase
-    .from("problems")
-    .select("*")
-    .eq("status", "published")
-    .order("created_at", { ascending: false });
-  const problems = (data ?? []) as Problem[];
+  const [problemsResult, submissionsResult] = await Promise.all([
+    supabase
+      .from("problems")
+      .select("*")
+      .eq("status", "published")
+      .order("created_at", { ascending: false }),
+    supabase.from("submissions").select("problem_id, status").eq("user_id", user.id),
+  ]);
+  const problems = (problemsResult.data ?? []) as Problem[];
+  const submissionRows = (submissionsResult.data ?? []) as Array<{
+    problem_id: string;
+    status: "pending" | "correct" | "incorrect";
+  }>;
+  const completedProblemIds = new Set(
+    submissionRows.filter((item) => item.status === "correct").map((item) => item.problem_id),
+  );
+  const attemptedProblemIds = new Set(submissionRows.map((item) => item.problem_id));
+  const inProgressCount = [...attemptedProblemIds].filter(
+    (problemId) => !completedProblemIds.has(problemId),
+  ).length;
   const displayName = profile?.full_name || user.email?.split("@")[0] || "bạn";
   const isAdmin = profile?.role === "admin";
 
   const stats = [
     { icon: BookOpen, label: "Tổng số bài", value: problems.length, color: "bg-blue-50 text-blue-700" },
-    { icon: CheckCircle2, label: "Đã hoàn thành", value: 0, color: "bg-emerald-50 text-emerald-700" },
-    { icon: CircleDashed, label: "Đang thực hiện", value: 0, color: "bg-amber-50 text-amber-700" },
+    {
+      icon: CheckCircle2,
+      label: "Đã hoàn thành",
+      value: completedProblemIds.size,
+      color: "bg-emerald-50 text-emerald-700",
+    },
+    {
+      icon: CircleDashed,
+      label: "Đang thực hiện",
+      value: inProgressCount,
+      color: "bg-amber-50 text-amber-700",
+    },
   ];
 
   return (
@@ -76,11 +100,22 @@ export default async function DashboardPage() {
                 className="group rounded-2xl border border-slate-900/10 bg-white p-6 transition hover:-translate-y-1 hover:border-emerald-500/40 hover:shadow-xl hover:shadow-slate-900/5"
               >
                 <div className="flex items-center justify-between gap-4">
-                  <span
-                    className={`rounded-full px-2.5 py-1 text-xs font-bold ${difficultyStyle[problem.difficulty]}`}
-                  >
-                    {difficultyLabel[problem.difficulty]}
-                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-xs font-bold ${difficultyStyle[problem.difficulty]}`}
+                    >
+                      {difficultyLabel[problem.difficulty]}
+                    </span>
+                    {completedProblemIds.has(problem.id) ? (
+                      <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">
+                        Đã đúng
+                      </span>
+                    ) : attemptedProblemIds.has(problem.id) ? (
+                      <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700">
+                        Đã nộp
+                      </span>
+                    ) : null}
+                  </div>
                   <ArrowRight size={18} className="text-slate-400 transition group-hover:translate-x-1 group-hover:text-emerald-700" />
                 </div>
                 <h3 className="mt-5 text-xl font-semibold">{problem.title}</h3>

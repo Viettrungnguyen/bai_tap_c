@@ -1,16 +1,28 @@
 import Link from "next/link";
-import { ArrowLeft, ChevronDown, Code2, Gauge, Lightbulb, MemoryStick } from "lucide-react";
+import { ArrowLeft, ChevronDown, FileCode2, Gauge, Lightbulb, MemoryStick, UploadCloud } from "lucide-react";
 import { notFound } from "next/navigation";
 
+import { submitSourceFile } from "@/app/submissions/actions";
 import { AppShell } from "@/components/app-shell";
+import { FeedbackBanner } from "@/components/feedback-banner";
+import { SubmitButton } from "@/components/submit-button";
 import { requireUser } from "@/lib/auth";
 import type { Problem, ProblemExample, ProblemHint } from "@/lib/types";
 
 export const metadata = { title: "Chi tiết bài tập" };
 export const instant = false;
 
-export default async function ProblemPage({ params }: PageProps<"/problems/[slug]">) {
-  const [{ slug }, { supabase, user, profile }] = await Promise.all([params, requireUser()]);
+type ProblemPageProps = {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ error?: string; message?: string }>;
+};
+
+export default async function ProblemPage({ params, searchParams }: ProblemPageProps) {
+  const [{ slug }, feedback, { supabase, user, profile }] = await Promise.all([
+    params,
+    searchParams,
+    requireUser(),
+  ]);
   const { data: problemData } = await supabase
     .from("problems")
     .select("*")
@@ -35,10 +47,12 @@ export default async function ProblemPage({ params }: PageProps<"/problems/[slug
   ]);
   const examples = (examplesResult.data ?? []) as ProblemExample[];
   const hints = (hintsResult.data ?? []) as ProblemHint[];
+  const submitAction = submitSourceFile.bind(null, problem.id, problem.slug);
 
   return (
     <AppShell email={user.email} isAdmin={profile?.role === "admin"}>
       <article>
+        <FeedbackBanner error={feedback.error} message={feedback.message} />
         <Link
           href="/dashboard"
           className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-slate-950"
@@ -123,14 +137,31 @@ export default async function ProblemPage({ params }: PageProps<"/problems/[slug
             </section>
 
             <section className="rounded-2xl bg-emerald-700 p-5 text-white">
-              <Code2 size={22} />
-              <h2 className="mt-5 text-xl font-semibold">Sẵn sàng viết code?</h2>
+              <FileCode2 size={22} />
+              <h2 className="mt-5 text-xl font-semibold">Nộp file code</h2>
               <p className="mt-2 text-sm leading-6 text-emerald-50/80">
-                Trình soạn code và chức năng chạy thử sẽ được tích hợp ở phần tiếp theo.
+                Chọn file nguồn đã viết. Hệ thống lưu code để admin review, không chạy chương trình.
               </p>
-              <span className="mt-5 inline-flex rounded-lg bg-white/15 px-3 py-2 text-xs font-semibold">
-                Sắp có trong phần 3
-              </span>
+              <form action={submitAction} className="mt-5">
+                <label className="block cursor-pointer rounded-xl border border-dashed border-white/35 bg-white/10 p-4 text-center transition hover:bg-white/15">
+                  <UploadCloud className="mx-auto" size={22} />
+                  <span className="mt-2 block text-sm font-semibold">Chọn file .c hoặc .cpp</span>
+                  <span className="mt-1 block text-xs text-emerald-100/70">Tối đa 256 KB</span>
+                  <input
+                    type="file"
+                    name="sourceFile"
+                    accept=".c,.cc,.cpp,.cxx,text/x-c,text/x-c++"
+                    required
+                    className="mt-3 block w-full text-xs text-emerald-50 file:mr-2 file:rounded-lg file:border-0 file:bg-white file:px-3 file:py-2 file:text-xs file:font-semibold file:text-emerald-800"
+                  />
+                </label>
+                <SubmitButton
+                  pendingLabel="Đang tải lên..."
+                  className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-white font-semibold text-emerald-800 transition hover:bg-emerald-50"
+                >
+                  <UploadCloud size={17} /> Nộp bài
+                </SubmitButton>
+              </form>
             </section>
           </aside>
         </div>
