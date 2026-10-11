@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { connection } from "next/server";
 import {
   ArrowRight,
   BookOpenText,
@@ -48,7 +47,6 @@ export default async function AssignmentsPage({
 }: {
   searchParams: Promise<{ error?: string; message?: string }>;
 }) {
-  await connection();
   const [{ supabase, user }, feedback] = await Promise.all([requireAdmin(), searchParams]);
   const [
     assignmentsResult,

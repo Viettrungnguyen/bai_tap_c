@@ -1,10 +1,14 @@
 import "server-only";
 
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
 
 export async function requireUser(options: { allowPasswordChange?: boolean } = {}) {
+  // Authentication and Supabase token validation depend on the incoming
+  // request and current time. Opt out of prerendering before either is read.
+  await connection();
   const supabase = await createClient();
   const {
     data: { user },
