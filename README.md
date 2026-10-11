@@ -22,11 +22,13 @@ Xem lộ trình tiếp theo tại [PLAN.md](./PLAN.md).
 - Thêm học viên hoặc giảng viên vào lớp.
 - Tạo tuần học, bài giảng Markdown và tài liệu đính kèm.
 - Tạo bài giao loại `coding`, `file` hoặc `text`.
+- Quản lý bài giao theo cấu trúc khóa học → tuần, kèm số học viên đã làm, chưa làm và hoàn thành.
 - Giới hạn đuôi file, số file và dung lượng mỗi file.
 - Quản lý ngân hàng đề C/C++, ví dụ, gợi ý và test case.
 - Tải file bài làm, review thủ công, nhập điểm và nhận xét.
 - Xem tổng kết toàn bộ học viên hoặc lọc theo lớp.
 - Xem chi tiết trạng thái từng bài: chưa làm, chờ chấm, chưa đúng, đúng.
+- Sidebar responsive dùng chung giúp truy cập nhanh toàn bộ khu vực học tập và quản trị.
 
 ## Kiến trúc
 

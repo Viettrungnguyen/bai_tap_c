@@ -19,9 +19,11 @@ LearnHub là nơi giảng viên tổ chức khóa học và lớp học, đăng 
 - [x] Upload trực tiếp từ trình duyệt tới Supabase Storage, phù hợp với Vercel.
 - [x] Review thủ công, điểm số và nhận xét.
 - [x] Dashboard học viên theo khóa/lớp.
+- [x] Quản lý bài giao theo khóa học, tuần và tiến độ nộp bài.
 - [x] Bảng tổng kết admin và lọc theo lớp.
 - [x] RLS giới hạn nội dung theo membership.
 - [x] Đổi thương hiệu giao diện thành `LearnHub`.
+- [x] Sidebar responsive và vùng nội dung rộng dùng chung toàn hệ thống.
 
 ## Việc cần làm trước production
 

@@ -1,7 +1,4 @@
-import Link from "next/link";
-import { BookOpen, BookOpenText, Code2, FileClock, LogOut, ShieldCheck } from "lucide-react";
-
-import { signOut } from "@/app/login/actions";
+import { SidebarNav } from "@/components/sidebar-nav";
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -9,60 +6,14 @@ type AppShellProps = {
   isAdmin?: boolean;
 };
 
-const links = [
-  { href: "/lessons", label: "Bài giảng", icon: BookOpenText },
-  { href: "/dashboard", label: "Bài giao", icon: BookOpen },
-  { href: "/submissions", label: "Bài đã nộp", icon: FileClock },
-];
-
 export function AppShell({ children, email, isAdmin }: AppShellProps) {
   return (
-    <div className="min-h-screen bg-[#f6f7f2]">
-      <header className="border-b border-slate-900/10 bg-white">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 lg:px-10">
-          <Link href="/dashboard" className="flex items-center gap-2.5 font-semibold">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-slate-950 text-emerald-300">
-              <Code2 size={19} />
-            </span>
-            LearnHub
-          </Link>
-          <div className="flex items-center gap-3">
-            <span className="hidden text-sm text-slate-500 sm:block">{email}</span>
-            <form action={signOut}>
-              <button
-                type="submit"
-                title="Đăng xuất"
-                className="grid h-9 w-9 place-items-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700"
-              >
-                <LogOut size={17} />
-              </button>
-            </form>
-          </div>
-        </div>
-      </header>
-      <div className="mx-auto grid max-w-7xl gap-8 px-5 py-8 md:grid-cols-[210px_1fr] lg:px-10">
-        <aside>
-          <nav className="flex gap-2 overflow-x-auto md:sticky md:top-8 md:flex-col">
-            {links.map(({ href, label, icon: Icon }) => (
-              <Link
-                key={href}
-                href={href}
-                className="flex shrink-0 items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-white hover:text-slate-950"
-              >
-                <Icon size={18} /> {label}
-              </Link>
-            ))}
-            {isAdmin ? (
-              <Link
-                href="/admin"
-                className="flex shrink-0 items-center gap-3 rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
-              >
-                <ShieldCheck size={18} /> Quản trị
-              </Link>
-            ) : null}
-          </nav>
-        </aside>
-        <main>{children}</main>
+    <div className="min-h-screen bg-[#f3f6f3]">
+      <SidebarNav email={email} isAdmin={isAdmin} />
+      <div className="lg:pl-72">
+        <main className="mx-auto min-h-screen w-full max-w-[1680px] px-5 py-7 sm:px-7 sm:py-9 lg:px-10 xl:px-12 xl:py-10">
+          {children}
+        </main>
       </div>
     </div>
   );
