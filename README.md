@@ -21,7 +21,8 @@ Xem lộ trình tiếp theo tại [PLAN.md](./PLAN.md).
 - Tạo khóa học và lớp học.
 - Thêm học viên hoặc giảng viên vào lớp.
 - Tạo tuần học, bài giảng Markdown và tài liệu đính kèm.
-- Tạo và chỉnh sửa bài giao loại `coding`, `file` hoặc `text` trong popup; slug được sinh tự động.
+- Tạo và chỉnh sửa bài giao loại `coding`, `file` hoặc `text` trong popup.
+- Đường dẫn nội bộ của khóa học, bài giảng, đề và bài giao được sinh tự động; giao diện không yêu cầu nhập slug.
 - Quản lý bài giao theo cấu trúc khóa học → tuần, kèm số học viên đã làm, chưa làm và hoàn thành.
 - Giới hạn đuôi file, số file và dung lượng mỗi file.
 - Quản lý ngân hàng đề coding riêng theo từng khóa học, cùng ví dụ, gợi ý và test case.

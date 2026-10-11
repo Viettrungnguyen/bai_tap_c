@@ -89,7 +89,7 @@ export default async function AdminWeekPage({ params, searchParams }: WeekPagePr
                   <Link key={lesson.id} href={`/admin/course/${id}/lessons/${lesson.id}`} className="group flex items-center justify-between gap-4 p-5 hover:bg-slate-50">
                     <div className="flex min-w-0 items-center gap-4">
                       <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-slate-100 font-semibold text-slate-600">{index + 1}</span>
-                      <div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h3 className="truncate font-semibold">{lesson.title}</h3><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${lesson.status === "published" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>{lesson.status === "published" ? "Đã xuất bản" : "Bản nháp"}</span></div><p className="mt-1 truncate text-sm text-slate-500">Thứ tự {lesson.sort_order} · /{lesson.slug}</p></div>
+                      <div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h3 className="truncate font-semibold">{lesson.title}</h3><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${lesson.status === "published" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>{lesson.status === "published" ? "Đã xuất bản" : "Bản nháp"}</span></div><p className="mt-1 truncate text-sm text-slate-500">Thứ tự {lesson.sort_order}</p></div>
                     </div>
                     <ArrowRight size={17} className="shrink-0 text-slate-400 transition group-hover:translate-x-1" />
                   </Link>

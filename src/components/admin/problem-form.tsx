@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Save } from "lucide-react";
 
 import { SubmitButton } from "@/components/submit-button";
@@ -14,26 +13,11 @@ type ProblemFormProps = {
   submitLabel: string;
 };
 
-function slugify(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/g, "d")
-    .replace(/Đ/g, "D")
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
 const inputClass =
   "mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none transition placeholder:text-slate-400 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-100";
 const labelClass = "block text-sm font-semibold text-slate-700";
 
 export function ProblemForm({ action, courses, defaultCourseId, problem, submitLabel }: ProblemFormProps) {
-  const [slug, setSlug] = useState(problem?.slug ?? "");
-  const [slugTouched, setSlugTouched] = useState(Boolean(problem?.slug));
-
   return (
     <form action={action} className="space-y-7">
       <label className={labelClass}>
@@ -46,38 +30,18 @@ export function ProblemForm({ action, courses, defaultCourseId, problem, submitL
         </select>
       </label>
 
-      <div className="grid gap-5 md:grid-cols-[1.4fr_1fr]">
-        <label className={labelClass}>
-          Tên bài
-          <input
-            name="title"
-            required
-            minLength={3}
-            maxLength={160}
-            defaultValue={problem?.title}
-            placeholder="Ví dụ: Tính tổng hai số"
-            className={inputClass}
-            onChange={(event) => {
-              if (!slugTouched) setSlug(slugify(event.target.value));
-            }}
-          />
-        </label>
-        <label className={labelClass}>
-          Slug
-          <input
-            name="slug"
-            required
-            pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
-            value={slug}
-            placeholder="tinh-tong-hai-so"
-            className={inputClass}
-            onChange={(event) => {
-              setSlugTouched(true);
-              setSlug(slugify(event.target.value));
-            }}
-          />
-        </label>
-      </div>
+      <label className={labelClass}>
+        Tên bài
+        <input
+          name="title"
+          required
+          minLength={3}
+          maxLength={160}
+          defaultValue={problem?.title}
+          placeholder="Ví dụ: Tính tổng hai số"
+          className={inputClass}
+        />
+      </label>
 
       <label className={labelClass}>
         Nội dung đề bài

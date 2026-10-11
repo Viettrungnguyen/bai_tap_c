@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Save } from "lucide-react";
 
 import { SubmitButton } from "@/components/submit-button";
@@ -12,29 +11,14 @@ type LessonFormProps = {
   submitLabel: string;
 };
 
-function slugify(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/g, "d")
-    .replace(/Đ/g, "D")
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
 const inputClass =
   "mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none transition placeholder:text-slate-400 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-100";
 const labelClass = "block text-sm font-semibold text-slate-700";
 
 export function LessonForm({ action, lesson, submitLabel }: LessonFormProps) {
-  const [slug, setSlug] = useState(lesson?.slug ?? "");
-  const [slugTouched, setSlugTouched] = useState(Boolean(lesson?.slug));
-
   return (
     <form action={action} className="space-y-6">
-      <div className="grid gap-5 md:grid-cols-[1.4fr_1fr_120px]">
+      <div className="grid gap-5 md:grid-cols-[1fr_120px]">
         <label className={labelClass}>
           Tên bài giảng
           <input
@@ -45,24 +29,6 @@ export function LessonForm({ action, lesson, submitLabel }: LessonFormProps) {
             defaultValue={lesson?.title}
             placeholder="Ví dụ: Chương trình C đầu tiên"
             className={inputClass}
-            onChange={(event) => {
-              if (!slugTouched) setSlug(slugify(event.target.value));
-            }}
-          />
-        </label>
-        <label className={labelClass}>
-          Slug
-          <input
-            name="slug"
-            required
-            pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
-            value={slug}
-            placeholder="chuong-trinh-c-dau-tien"
-            className={inputClass}
-            onChange={(event) => {
-              setSlugTouched(true);
-              setSlug(slugify(event.target.value));
-            }}
           />
         </label>
         <label className={labelClass}>

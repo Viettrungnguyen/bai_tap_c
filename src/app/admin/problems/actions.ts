@@ -5,15 +5,12 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { requireAdmin } from "@/lib/auth";
+import { createSlug } from "@/lib/slug";
 import type { ProblemStatus } from "@/lib/types";
 
 const problemSchema = z.object({
   courseId: z.uuid("Khóa học không hợp lệ."),
   title: z.string().trim().min(3, "Tên bài phải có ít nhất 3 ký tự.").max(160),
-  slug: z
-    .string()
-    .trim()
-    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug chỉ gồm chữ thường, số và dấu gạch ngang."),
   description: z.string().trim().min(10, "Nội dung đề phải có ít nhất 10 ký tự."),
   inputDescription: z.string().trim(),
   outputDescription: z.string().trim(),
@@ -54,7 +51,6 @@ function problemInput(formData: FormData) {
   return {
     courseId: value(formData, "courseId"),
     title: value(formData, "title"),
-    slug: value(formData, "slug"),
     description: value(formData, "description"),
     inputDescription: value(formData, "inputDescription"),
     outputDescription: value(formData, "outputDescription"),
@@ -77,7 +73,6 @@ function withMessage(path: string, key: "error" | "message", message: string) {
 }
 
 function databaseMessage(message: string) {
-  if (message.includes("problems_slug_key")) return "Slug này đã được sử dụng.";
   if (message.includes("Problem is used by an assignment")) {
     return "Không thể chuyển đề sang khóa khác vì đề đang được dùng trong bài giao hiện tại.";
   }
@@ -97,7 +92,7 @@ export async function createProblem(formData: FormData) {
     .insert({
       course_id: parsed.data.courseId,
       title: parsed.data.title,
-      slug: parsed.data.slug,
+      slug: createSlug(parsed.data.title),
       description: parsed.data.description,
       input_description: parsed.data.inputDescription,
       output_description: parsed.data.outputDescription,
@@ -146,7 +141,6 @@ export async function updateProblem(problemId: string, formData: FormData) {
     .update({
       course_id: parsed.data.courseId,
       title: parsed.data.title,
-      slug: parsed.data.slug,
       description: parsed.data.description,
       input_description: parsed.data.inputDescription,
       output_description: parsed.data.outputDescription,

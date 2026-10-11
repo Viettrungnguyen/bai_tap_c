@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { requireAdmin } from "@/lib/auth";
+import { createSlug } from "@/lib/slug";
 import type { LessonStatus } from "@/lib/types";
 
 const RESOURCE_BUCKET = "lesson-resources";
@@ -18,10 +19,6 @@ const weekSchema = z.object({
 
 const lessonSchema = z.object({
   title: z.string().trim().min(3, "Tên bài giảng phải có ít nhất 3 ký tự.").max(160),
-  slug: z
-    .string()
-    .trim()
-    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug chỉ gồm chữ thường, số và dấu gạch ngang."),
   summary: z.string().trim().max(2000),
   content: z.string().trim().min(10, "Nội dung bài giảng phải có ít nhất 10 ký tự."),
   sortOrder: z.coerce.number().int().min(0).max(10000),
@@ -43,7 +40,6 @@ function withMessage(path: string, key: "error" | "message", message: string) {
 
 function databaseMessage(message: string) {
   if (message.includes("course_weeks_week_number_key")) return "Tuần này đã tồn tại.";
-  if (message.includes("lessons_slug_key")) return "Slug bài giảng đã được sử dụng.";
   return "Không thể lưu dữ liệu. Vui lòng thử lại.";
 }
 
@@ -133,7 +129,6 @@ export async function createLesson(weekId: string, formData: FormData) {
   const returnPath = `/admin/course/${id}`;
   const parsed = lessonSchema.safeParse({
     title: value(formData, "title"),
-    slug: value(formData, "slug"),
     summary: value(formData, "summary"),
     content: value(formData, "content"),
     sortOrder: value(formData, "sortOrder") || "0",
@@ -146,7 +141,7 @@ export async function createLesson(weekId: string, formData: FormData) {
     .insert({
       week_id: id,
       title: parsed.data.title,
-      slug: parsed.data.slug,
+      slug: createSlug(parsed.data.title),
       summary: parsed.data.summary,
       content: parsed.data.content,
       sort_order: parsed.data.sortOrder,
@@ -166,9 +161,14 @@ export async function updateLesson(weekId: string, lessonId: string, formData: F
   const week = z.uuid().parse(weekId);
   const lesson = z.uuid().parse(lessonId);
   const returnPath = `/admin/course/${week}/lessons/${lesson}`;
+  const { data: currentLesson } = await supabase
+    .from("lessons")
+    .select("slug")
+    .eq("id", lesson)
+    .eq("week_id", week)
+    .maybeSingle();
   const parsed = lessonSchema.safeParse({
     title: value(formData, "title"),
-    slug: value(formData, "slug"),
     summary: value(formData, "summary"),
     content: value(formData, "content"),
     sortOrder: value(formData, "sortOrder") || "0",
@@ -180,7 +180,6 @@ export async function updateLesson(weekId: string, lessonId: string, formData: F
     .from("lessons")
     .update({
       title: parsed.data.title,
-      slug: parsed.data.slug,
       summary: parsed.data.summary,
       content: parsed.data.content,
       sort_order: parsed.data.sortOrder,
@@ -192,7 +191,7 @@ export async function updateLesson(weekId: string, lessonId: string, formData: F
   revalidatePath(`/admin/course/${week}`);
   revalidatePath(returnPath);
   revalidatePath("/lessons");
-  revalidatePath(`/lessons/${parsed.data.slug}`);
+  if (currentLesson?.slug) revalidatePath(`/lessons/${currentLesson.slug}`);
   redirect(withMessage(returnPath, "message", "Đã lưu nội dung bài giảng."));
 }
 

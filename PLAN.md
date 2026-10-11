@@ -20,7 +20,7 @@ LearnHub là nơi giảng viên tổ chức khóa học và lớp học, đăng 
 - [x] Review thủ công, điểm số và nhận xét.
 - [x] Dashboard học viên theo khóa/lớp.
 - [x] Quản lý bài giao theo khóa học, tuần và tiến độ nộp bài.
-- [x] Popup tạo/sửa bài giao, slug được sinh tự động.
+- [x] Popup tạo/sửa bài giao; toàn bộ slug được sinh tự động và ẩn khỏi giao diện.
 - [x] Ngân hàng đề coding riêng theo từng khóa học.
 - [x] Bảng tổng kết admin và lọc theo lớp.
 - [x] RLS giới hạn nội dung theo membership.

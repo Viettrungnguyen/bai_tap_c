@@ -65,7 +65,7 @@ export function AssignmentFormModal({
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">Bài giao</p>
                 <h2 id="assignment-modal-title" className="mt-1 text-2xl font-semibold text-slate-950">{editing ? "Chỉnh sửa bài giao" : "Tạo bài giao mới"}</h2>
-                <p className="mt-1 text-sm text-slate-500">Slug được tạo tự động, bạn chỉ cần nhập thông tin học viên cần thấy.</p>
+                <p className="mt-1 text-sm text-slate-500">Bạn chỉ cần nhập những thông tin học viên cần thấy.</p>
               </div>
               <button type="button" onClick={() => setOpen(false)} aria-label="Đóng" className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-900"><X size={19} /></button>
             </header>

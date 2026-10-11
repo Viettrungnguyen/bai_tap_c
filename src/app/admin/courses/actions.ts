@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { requireAdmin } from "@/lib/auth";
+import { createSlug } from "@/lib/slug";
 
 function value(data: FormData, key: string) {
   const item = data.get(key);
@@ -17,17 +18,16 @@ function go(path: string, key: "error" | "message", message: string): never {
 
 const courseSchema = z.object({
   title: z.string().min(3).max(160),
-  slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
   subject: z.string().max(120),
   description: z.string().max(5000),
 });
 
 export async function createCourse(formData: FormData) {
   const { supabase, user } = await requireAdmin();
-  const parsed = courseSchema.safeParse({ title: value(formData, "title"), slug: value(formData, "slug"), subject: value(formData, "subject"), description: value(formData, "description") });
+  const parsed = courseSchema.safeParse({ title: value(formData, "title"), subject: value(formData, "subject"), description: value(formData, "description") });
   if (!parsed.success) go("/admin/courses", "error", "Thông tin khóa học không hợp lệ.");
-  const { data, error } = await supabase.from("courses").insert({ ...parsed.data, status: "draft", created_by: user.id }).select("id").single();
-  if (error || !data) go("/admin/courses", "error", error?.message.includes("courses_slug_key") ? "Slug khóa học đã tồn tại." : "Không thể tạo khóa học.");
+  const { data, error } = await supabase.from("courses").insert({ ...parsed.data, slug: createSlug(parsed.data.title), status: "draft", created_by: user.id }).select("id").single();
+  if (error || !data) go("/admin/courses", "error", "Không thể tạo khóa học.");
   revalidatePath("/admin/courses");
   go(`/admin/courses/${data.id}`, "message", "Đã tạo khóa học.");
 }

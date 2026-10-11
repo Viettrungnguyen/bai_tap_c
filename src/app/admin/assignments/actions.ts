@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { requireAdmin } from "@/lib/auth";
+import { createSlug } from "@/lib/slug";
 
 function value(data: FormData, key: string) {
   const item = data.get(key);
@@ -13,20 +14,6 @@ function value(data: FormData, key: string) {
 
 function go(path: string, key: "error" | "message", message: string): never {
   redirect(`${path}${path.includes("?") ? "&" : "?"}${key}=${encodeURIComponent(message)}`);
-}
-
-function slugify(value: string) {
-  const base = value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/g, "d")
-    .replace(/Đ/g, "D")
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 120);
-  return `${base || "bai-giao"}-${crypto.randomUUID().slice(0, 8)}`;
 }
 
 const schema = z.object({
@@ -97,7 +84,7 @@ export async function createAssignment(formData: FormData) {
 
   const { error } = await supabase.from("assignments").insert({
     ...payload(parsed.data, formData),
-    slug: slugify(parsed.data.title),
+    slug: createSlug(parsed.data.title),
     status: "draft",
     created_by: user.id,
   });
