@@ -8,6 +8,7 @@ import { requireAdmin } from "@/lib/auth";
 import type { ProblemStatus } from "@/lib/types";
 
 const problemSchema = z.object({
+  courseId: z.uuid("Khóa học không hợp lệ."),
   title: z.string().trim().min(3, "Tên bài phải có ít nhất 3 ký tự.").max(160),
   slug: z
     .string()
@@ -51,6 +52,7 @@ function value(formData: FormData, key: string) {
 
 function problemInput(formData: FormData) {
   return {
+    courseId: value(formData, "courseId"),
     title: value(formData, "title"),
     slug: value(formData, "slug"),
     description: value(formData, "description"),
@@ -76,6 +78,9 @@ function withMessage(path: string, key: "error" | "message", message: string) {
 
 function databaseMessage(message: string) {
   if (message.includes("problems_slug_key")) return "Slug này đã được sử dụng.";
+  if (message.includes("Problem is used by an assignment")) {
+    return "Không thể chuyển đề sang khóa khác vì đề đang được dùng trong bài giao hiện tại.";
+  }
   return "Không thể lưu dữ liệu. Vui lòng thử lại.";
 }
 
@@ -90,6 +95,7 @@ export async function createProblem(formData: FormData) {
   const { data, error } = await supabase
     .from("problems")
     .insert({
+      course_id: parsed.data.courseId,
       title: parsed.data.title,
       slug: parsed.data.slug,
       description: parsed.data.description,
@@ -138,6 +144,7 @@ export async function updateProblem(problemId: string, formData: FormData) {
   const { error } = await supabase
     .from("problems")
     .update({
+      course_id: parsed.data.courseId,
       title: parsed.data.title,
       slug: parsed.data.slug,
       description: parsed.data.description,

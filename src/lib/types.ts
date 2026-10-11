@@ -24,6 +24,7 @@ export type Profile = {
 
 export type Problem = {
   id: string;
+  course_id: string;
   title: string;
   slug: string;
   description: string;

@@ -20,6 +20,8 @@ LearnHub là nơi giảng viên tổ chức khóa học và lớp học, đăng 
 - [x] Review thủ công, điểm số và nhận xét.
 - [x] Dashboard học viên theo khóa/lớp.
 - [x] Quản lý bài giao theo khóa học, tuần và tiến độ nộp bài.
+- [x] Popup tạo/sửa bài giao, slug được sinh tự động.
+- [x] Ngân hàng đề coding riêng theo từng khóa học.
 - [x] Bảng tổng kết admin và lọc theo lớp.
 - [x] RLS giới hạn nội dung theo membership.
 - [x] Đổi thương hiệu giao diện thành `LearnHub`.
@@ -27,7 +29,7 @@ LearnHub là nơi giảng viên tổ chức khóa học và lớp học, đăng 
 
 ## Việc cần làm trước production
 
-- [ ] Chạy migration `004`, `005`, `006` trên Supabase production.
+- [ ] Chạy migration `004`, `005`, `006`, `007` trên Supabase production.
 - [ ] Chạy truy vấn kiểm tra cuối README và xác nhận đủ 7 tài khoản học viên.
 - [ ] Kiểm tra thủ công một vòng bằng tài khoản admin và một tài khoản học viên.
 - [ ] Cấu hình biến môi trường trên Vercel và deploy commit mới nhất.

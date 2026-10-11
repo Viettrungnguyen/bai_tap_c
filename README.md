@@ -21,10 +21,10 @@ Xem lộ trình tiếp theo tại [PLAN.md](./PLAN.md).
 - Tạo khóa học và lớp học.
 - Thêm học viên hoặc giảng viên vào lớp.
 - Tạo tuần học, bài giảng Markdown và tài liệu đính kèm.
-- Tạo bài giao loại `coding`, `file` hoặc `text`.
+- Tạo và chỉnh sửa bài giao loại `coding`, `file` hoặc `text` trong popup; slug được sinh tự động.
 - Quản lý bài giao theo cấu trúc khóa học → tuần, kèm số học viên đã làm, chưa làm và hoàn thành.
 - Giới hạn đuôi file, số file và dung lượng mỗi file.
-- Quản lý ngân hàng đề C/C++, ví dụ, gợi ý và test case.
+- Quản lý ngân hàng đề coding riêng theo từng khóa học, cùng ví dụ, gợi ý và test case.
 - Tải file bài làm, review thủ công, nhập điểm và nhận xét.
 - Xem tổng kết toàn bộ học viên hoặc lọc theo lớp.
 - Xem chi tiết trạng thái từng bài: chưa làm, chờ chấm, chưa đúng, đúng.
@@ -100,6 +100,7 @@ Mở Supabase Dashboard → SQL Editor và chạy từng file, đúng thứ tự
 5. supabase/migrations/005_student_usernames.sql
 6. supabase/seeds/001_week_01_exercises.sql       # tùy chọn
 7. supabase/migrations/006_courses_classes_assignments.sql
+8. supabase/migrations/007_problem_courses.sql
 ```
 
 Nếu dùng seed bài C mẫu, phải chạy seed trước migration `006` để các `problems` mẫu được chuyển thành assignment coding tự động.
@@ -113,6 +114,7 @@ Các migration `001`–`003` đã có. Chạy tiếp:
 2. supabase/migrations/005_student_usernames.sql
 3. supabase/seeds/001_week_01_exercises.sql       # tùy chọn, chạy tại đây
 4. supabase/migrations/006_courses_classes_assignments.sql
+5. supabase/migrations/007_problem_courses.sql
 ```
 
 Không chạy lại migration đã thành công vì các migration được thiết kế chạy tuần tự một lần.
@@ -126,6 +128,8 @@ Migration `006` sẽ tự động:
 - Gắn các `submissions` cũ với assignment tương ứng.
 - Tạo bucket `assignment-submissions`.
 - Áp dụng RLS theo khóa/lớp cho bài giảng, bài giao, đề và file.
+
+Migration `007` gắn mỗi đề coding với một khóa học, chuyển các đề cũ về khóa tương ứng và ngăn chọn đề sai khóa khi tạo bài giao.
 
 ### Kiểm tra sau khi chạy SQL
 
@@ -148,6 +152,12 @@ from public.assignments
 group by assignment_type, status
 order by assignment_type, status;
 
+select courses.title as course_title, count(problems.id) as problem_count
+from public.courses
+left join public.problems on problems.course_id = courses.id
+group by courses.id, courses.title
+order by courses.title;
+
 select id, name, public, file_size_limit
 from storage.buckets
 where id in ('lesson-resources', 'assignment-submissions');
@@ -163,6 +173,7 @@ Kết quả mong đợi:
 - Có ít nhất một course và một class.
 - Lớp mặc định có các tài khoản học viên hiện tại.
 - Các đề C/C++ cũ xuất hiện trong `assignments` với loại `coding`.
+- Các đề coding được thống kê dưới đúng khóa học và không có `course_id` trống.
 - Hai bucket đều có `public = false`.
 - Bảy học viên có username, trường và ngành sau khi migration `005` backfill metadata.
 

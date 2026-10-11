@@ -22,7 +22,7 @@ import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 import { FeedbackBanner } from "@/components/feedback-banner";
 import { SubmitButton } from "@/components/submit-button";
 import { requireAdmin } from "@/lib/auth";
-import type { Problem, ProblemExample, ProblemHint, TestCase } from "@/lib/types";
+import type { Course, Problem, ProblemExample, ProblemHint, TestCase } from "@/lib/types";
 
 export const metadata = { title: "Chỉnh sửa bài tập" };
 export const instant = false;
@@ -55,7 +55,7 @@ export default async function EditProblemPage({
   if (!problemData) notFound();
   const problem = problemData as Problem;
 
-  const [examplesResult, hintsResult, testsResult] = await Promise.all([
+  const [examplesResult, hintsResult, testsResult, coursesResult] = await Promise.all([
     supabase
       .from("problem_examples")
       .select("*")
@@ -63,11 +63,13 @@ export default async function EditProblemPage({
       .order("sort_order"),
     supabase.from("problem_hints").select("*").eq("problem_id", id).order("sort_order"),
     supabase.from("test_cases").select("*").eq("problem_id", id).order("sort_order"),
+    supabase.from("courses").select("*").order("title"),
   ]);
 
   const examples = (examplesResult.data ?? []) as ProblemExample[];
   const hints = (hintsResult.data ?? []) as ProblemHint[];
   const testCases = (testsResult.data ?? []) as TestCase[];
+  const courses = (coursesResult.data ?? []) as Course[];
   const updateProblemAction = updateProblem.bind(null, id);
   const publishAction = setProblemStatus.bind(null, id, "published");
   const draftAction = setProblemStatus.bind(null, id, "draft");
@@ -139,7 +141,7 @@ export default async function EditProblemPage({
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">NỘI DUNG</p>
             <h2 className="mt-2 text-2xl font-semibold">Thông tin bài tập</h2>
           </div>
-          <ProblemForm action={updateProblemAction} problem={problem} submitLabel="Lưu thay đổi" />
+          <ProblemForm action={updateProblemAction} courses={courses} problem={problem} submitLabel="Lưu thay đổi" />
         </section>
 
         <section className="rounded-2xl border border-slate-900/10 bg-white p-6 sm:p-8">

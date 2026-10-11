@@ -6,16 +6,19 @@ import { AppShell } from "@/components/app-shell";
 import { ProblemForm } from "@/components/admin/problem-form";
 import { FeedbackBanner } from "@/components/feedback-banner";
 import { requireAdmin } from "@/lib/auth";
+import type { Course } from "@/lib/types";
 
 export const metadata = { title: "Tạo bài tập" };
 export const instant = false;
 
 type NewProblemPageProps = {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; course?: string }>;
 };
 
 export default async function NewProblemPage({ searchParams }: NewProblemPageProps) {
-  const [{ user }, feedback] = await Promise.all([requireAdmin(), searchParams]);
+  const [{ supabase, user }, feedback] = await Promise.all([requireAdmin(), searchParams]);
+  const { data } = await supabase.from("courses").select("*").order("title");
+  const courses = (data ?? []) as Course[];
 
   return (
     <AppShell email={user.email} isAdmin>
@@ -35,7 +38,7 @@ export default async function NewProblemPage({ searchParams }: NewProblemPagePro
           <FeedbackBanner error={feedback.error} />
         </div>
         <div className="rounded-2xl border border-slate-900/10 bg-white p-6 sm:p-8">
-          <ProblemForm action={createProblem} submitLabel="Tạo bản nháp" />
+          <ProblemForm action={createProblem} courses={courses} defaultCourseId={feedback.course} submitLabel="Tạo bản nháp" />
         </div>
       </section>
     </AppShell>

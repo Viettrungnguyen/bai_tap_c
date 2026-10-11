@@ -4,10 +4,12 @@ import { useState } from "react";
 import { Save } from "lucide-react";
 
 import { SubmitButton } from "@/components/submit-button";
-import type { Problem } from "@/lib/types";
+import type { Course, Problem } from "@/lib/types";
 
 type ProblemFormProps = {
   action: (formData: FormData) => void | Promise<void>;
+  courses: Course[];
+  defaultCourseId?: string;
   problem?: Problem;
   submitLabel: string;
 };
@@ -28,12 +30,22 @@ const inputClass =
   "mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none transition placeholder:text-slate-400 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-100";
 const labelClass = "block text-sm font-semibold text-slate-700";
 
-export function ProblemForm({ action, problem, submitLabel }: ProblemFormProps) {
+export function ProblemForm({ action, courses, defaultCourseId, problem, submitLabel }: ProblemFormProps) {
   const [slug, setSlug] = useState(problem?.slug ?? "");
   const [slugTouched, setSlugTouched] = useState(Boolean(problem?.slug));
 
   return (
     <form action={action} className="space-y-7">
+      <label className={labelClass}>
+        Khóa học
+        <select name="courseId" required defaultValue={problem?.course_id ?? defaultCourseId ?? ""} className={inputClass}>
+          <option value="">Chọn khóa học</option>
+          {courses.map((course) => (
+            <option key={course.id} value={course.id}>{course.title}</option>
+          ))}
+        </select>
+      </label>
+
       <div className="grid gap-5 md:grid-cols-[1.4fr_1fr]">
         <label className={labelClass}>
           Tên bài

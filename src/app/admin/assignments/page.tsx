@@ -3,8 +3,6 @@ import {
   ArrowRight,
   BookOpenText,
   CheckCircle2,
-  ChevronDown,
-  CirclePlus,
   ClipboardList,
   Clock3,
   FileCheck2,
@@ -14,7 +12,8 @@ import {
   Users,
 } from "lucide-react";
 
-import { createAssignment, setAssignmentStatus } from "@/app/admin/assignments/actions";
+import { setAssignmentStatus } from "@/app/admin/assignments/actions";
+import { AssignmentFormModal } from "@/components/admin/assignment-form-modal";
 import { AppShell } from "@/components/app-shell";
 import { FeedbackBanner } from "@/components/feedback-banner";
 import { SubmitButton } from "@/components/submit-button";
@@ -24,9 +23,6 @@ import type { Assignment, Course, CourseClass, CourseMember, CourseWeek, Problem
 
 export const metadata = { title: "Quản lý bài giao" };
 export const instant = false;
-
-const field =
-  "mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-emerald-600 focus:ring-4 focus:ring-emerald-100";
 
 const assignmentTypeLabel = {
   coding: "Coding",
@@ -138,12 +134,22 @@ export default async function AssignmentsPage({
               ) : null}
             </p>
           </div>
-          <Link
-            href={`/assignments/${assignment.id}`}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-emerald-300 hover:text-emerald-700"
-          >
-            Chi tiết <ArrowRight size={14} />
-          </Link>
+          <div className="flex shrink-0 gap-2">
+            <AssignmentFormModal
+              courses={courses}
+              classes={classes}
+              weeks={weeks}
+              problems={problems}
+              assignment={assignment}
+              compact
+            />
+            <Link
+              href={`/assignments/${assignment.id}`}
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-700 transition hover:border-emerald-300 hover:text-emerald-700"
+            >
+              Chi tiết <ArrowRight size={14} />
+            </Link>
+          </div>
         </div>
 
         <div className="mt-5 rounded-xl bg-slate-50 p-4">
@@ -222,34 +228,9 @@ export default async function AssignmentsPage({
         </div>
 
         <div className="mt-7"><FeedbackBanner {...feedback} /></div>
-
-        <details className="group mt-6 rounded-2xl border border-slate-200 bg-white shadow-sm [&>summary::-webkit-details-marker]:hidden">
-          <summary className="flex items-center justify-between gap-4 px-5 py-4 sm:px-6">
-            <span className="flex items-center gap-3 font-semibold text-slate-900">
-              <span className="grid h-9 w-9 place-items-center rounded-xl bg-slate-950 text-emerald-300"><CirclePlus size={18} /></span>
-              Tạo bài giao mới
-            </span>
-            <ChevronDown size={19} className="text-slate-400 transition group-open:rotate-180" />
-          </summary>
-          <form action={createAssignment} className="grid gap-5 border-t border-slate-100 p-5 sm:p-6 lg:grid-cols-2 xl:grid-cols-4">
-            <label className="block text-sm font-semibold">Khóa học<select name="courseId" required className={field}><option value="">Chọn khóa</option>{courses.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label>
-            <label className="block text-sm font-semibold">Lớp (tùy chọn)<select name="classId" className={field}><option value="">Toàn khóa</option>{classes.map((item) => <option key={item.id} value={item.id}>{item.name} · {courses.find((course) => course.id === item.course_id)?.title}</option>)}</select></label>
-            <label className="block text-sm font-semibold">Tuần (tùy chọn)<select name="weekId" className={field}><option value="">Không gắn tuần</option>{weeks.map((item) => <option key={item.id} value={item.id}>{courses.find((course) => course.id === item.course_id)?.title} · Tuần {item.week_number}: {item.title}</option>)}</select></label>
-            <label className="block text-sm font-semibold">Loại bài<select name="assignmentType" className={field}><option value="file">Nộp file</option><option value="coding">Coding</option><option value="text">Bài text/file</option></select></label>
-            <label className="block text-sm font-semibold">Tên bài<input name="title" required className={field} /></label>
-            <label className="block text-sm font-semibold">Slug<input name="slug" required placeholder="bai-tap-tuan-01" className={field} /></label>
-            <label className="block text-sm font-semibold">Đề code (nếu là coding)<select name="problemId" className={field}><option value="">Không liên kết</option>{problems.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label>
-            <label className="block text-sm font-semibold">Hạn nộp<input name="dueAt" type="datetime-local" className={field} /></label>
-            <label className="block text-sm font-semibold lg:col-span-2">Mô tả<textarea name="description" rows={3} className={field} /></label>
-            <label className="block text-sm font-semibold lg:col-span-2">Yêu cầu<textarea name="instructions" rows={3} className={field} /></label>
-            <label className="block text-sm font-semibold xl:col-span-2">Đuôi file cho phép<input name="allowedExtensions" placeholder=".c, .cpp hoặc .pdf, .zip" className={field} /></label>
-            <label className="block text-sm font-semibold">Số file tối đa<input name="maxFiles" type="number" min={1} max={10} defaultValue={1} className={field} /></label>
-            <label className="block text-sm font-semibold">MB mỗi file<input name="maxFileSizeMb" type="number" min={1} max={50} defaultValue={10} className={field} /></label>
-            <div className="flex justify-end lg:col-span-2 xl:col-span-4">
-              <SubmitButton className="flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-950 px-6 font-semibold text-white transition hover:bg-emerald-700"><CirclePlus size={17} /> Tạo bản nháp</SubmitButton>
-            </div>
-          </form>
-        </details>
+        <div className="mt-6 flex justify-end">
+          <AssignmentFormModal courses={courses} classes={classes} weeks={weeks} problems={problems} />
+        </div>
 
         <div className="mt-8 space-y-8">
           {courses.map((course) => {
